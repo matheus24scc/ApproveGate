@@ -19,7 +19,7 @@
 
 Agentes autônomos (coding agents, bots de infra, agentes de trading) tomam ações de risco sem ponto de controle humano. O **ApproveGate** vira o WhatsApp — que todo dev já tem no bolso — em uma **superfície de aprovação** para o agente: antes de uma ação arriscada, ele manda uma solicitação de aprovação no WhatsApp (com contexto) e só executa após o toque "aprovar" do humano.
 
-> Gap real (busca no GitHub): `whatsapp agent approval gateway` = 2 repos (apenas labs); `commit secret scan whatsapp` = 0. Ninguém entregou um gateway focado de aprovação via WhatsApp para agentes, com motor de risco + auditoria tamper-evident.
+> Gap real (busca no GitHub): `whatsapp agent approval gateway` = 3 repos na busca atual (nenhum é um gateway dedicado pronto com motor de risco + auditoria); `commit secret scan whatsapp` = 0. Ninguém entregou um gateway focado de aprovação via WhatsApp para agentes, com motor de risco + auditoria tamper-evident.
 
 ## Instalação
 
@@ -64,7 +64,7 @@ r = gw.request({"op": "delete", "target": "producao.db",
 - `whatsapp.py` — **adapter real de WhatsApp** (envia via whatsapp-api + webhook de retorno aprovar/rejeitar) e `ApprovalWebhook`.
 - `cli.py` — `approvegate demo`.
 
-## Avançado: attestation + MCP (100x via skills do GitHub)
+## Avançado: attestation + MCP (capacidades de produção via skills do GitHub)
 
 O ApproveGate foi elevado com **skills avançadas reais** do GitHub (instaladas + testadas) — é assim que ele chega a outro nível:
 
@@ -123,7 +123,7 @@ gw = Gateway(approver, policy=load_policy("policy.yaml"))
 
 ## Attestation Sigstore (opcional)
 
-Por padrão cada decisão é assinada localmente (DSSE/Ed25519 — `gw.signed_verify_all()`). Para attestation **verificável por terceiros** (Fulcio/Rekor), instale o `cosign` e autentique com OIDC; `sign_sigstore()`/`verify()` produzem/envelopam o blob Sigstore. Sem `cosign`, essas funções degradam graciosamente (retornam `None`/`False`) — não quebram o fluxo.
+Por padrão cada decisão é assinada localmente (DSSE/Ed25519 — `gw.signed_verify_all()`). Para attestation **verificável por terceiros** (Fulcio/Rekor), instale o `cosign` e autentique com OIDC; `sign_sigstore()`/`verify_sigstore()` produzem/envelopam o blob Sigstore. Sem `cosign`, essas funções degradam graciosamente (retornam `None`/`False`) — não quebram o fluxo.
 
 ## Segurança / chaves
 

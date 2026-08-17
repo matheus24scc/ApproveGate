@@ -1,0 +1,24 @@
+# ApproveGate
+
+> WhatsApp human-in-the-loop approval gateway for autonomous AI agents: risk scoring + tamper-evident audit log.
+
+This file follows the [llms.txt](https://llmstxt.org/) convention: a concise, machine-readable map
+of the project for large language models and AI agents.
+
+## About
+
+- Repository: https://github.com/matheus24scc/ApproveGate
+- Primary stack: Unknown — fill in the primary language/stack
+- License: MIT
+
+## Key documents
+
+- [README](https://github.com/matheus24scc/ApproveGate/blob/main/README.md): overview, features, installation, usage
+- [AGENTS.md](https://github.com/matheus24scc/ApproveGate/blob/main/AGENTS.md): how AI agents should work in this repo
+- [CONTRIBUTING](https://github.com/matheus24scc/ApproveGate/blob/main/CONTRIBUTING.md): development setup and contribution workflow
+- [CHANGELOG](https://github.com/matheus24scc/ApproveGate/blob/main/CHANGELOG.md): version history
+
+## For agents
+
+To work effectively here: read the README and AGENTS.md first, then follow the commands and
+conventions they describe. Prefer the project's own scripts over ad-hoc commands.

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "approvegate"
+version = "0.1.0"
+description = "WhatsApp human-in-the-loop approval gateway for autonomous AI agents."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Matheus Gabriel Schveitzer" }]
+
+[project.scripts]
+approvegate = "approvegate.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["approvegate*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

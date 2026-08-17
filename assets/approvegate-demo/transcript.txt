@@ -3,7 +3,7 @@ $ approvegate demo
 === ApproveGate: WhatsApp como canal de aprovacao HITL p/ agentes ===
 
 [agente] quer 'read' -> executed (executed:read)
-[WhatsApp] ⚠️ aprovacao solicitada: delete (risco 75)
+[WhatsApp] ⚠️ aprovacao solicitada: 🛡️ ApproveGate — solicitacao AG0002
 [agente] quer 'delete producao.db' (risco 75) -> pending (aguardando humano)
 [humano aprovou no WhatsApp] -> executed (executed:delete)
 [attestation] decisoes assinadas (DSSE/Ed25519) verificadas: True
@@ -12,7 +12,7 @@ $ approvegate demo
 Log de auditoria intacto (hash-chain): True
 [agente] quer 'read' -> executed (executed:read)
 
-[WhatsApp] ⚠️ aprovacao solicitada: delete (risco 75)
+[WhatsApp] ⚠️ aprovacao solicitada: 🛡️ ApproveGate — solicitacao AG0002
 [agente] quer 'delete producao.db' (risco 75) -> pending (aguardando humano)
 
 [humano aprovou no WhatsApp] -> executed (executed:delete)

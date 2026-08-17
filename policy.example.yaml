@@ -1,0 +1,17 @@
+# ApproveGate — exemplo de politica de risco (YAML)
+# Carregue com: Gateway(approver, policy=load_policy("policy.yaml"))
+threshold: 50          # acoes com risco >= 50 exigem aprovacao
+weights:               # peso por tipo de operacao (op)
+  delete: 40
+  drop: 50
+  push: 20
+  exec: 30
+  payment: 45
+  send_message: 10
+  create: 5
+  update: 10
+  read: 0
+  query: 0
+deny_list:             # nega sempre (por op ou por tool)
+  - op: drop
+  - tool: rm

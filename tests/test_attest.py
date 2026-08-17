@@ -29,3 +29,10 @@ def test_gateway_signed_verify_all():
     assert gw.signed_verify_all() is True
     gw.signed[0]["signatures"][0]["sig"] = base64.b64encode(b"x" * 64).decode()
     assert gw.signed_verify_all() is False
+
+def test_sigstore_unavailable_graceful():
+    from approvegate.attest import cosign_available, sign_sigstore, verify_sigstore
+    assert cosign_available() is False
+    assert sign_sigstore({"id": 1}) is None
+    assert verify_sigstore({"backend": "sigstore/cosign", "payload": "x",
+                            "signatures": [{"sig": "y", "cert": "z"}]}) is False

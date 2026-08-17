@@ -2,7 +2,8 @@
 from __future__ import annotations
 import argparse
 from .gateway import Gateway
-from .approver import MockApprover, WhatsAppApprover
+from .approver import MockApprover
+from .whatsapp import WhatsAppApprover
 
 def demo() -> None:
     print("=== ApproveGate: WhatsApp como canal de aprovacao HITL p/ agentes ===\n")

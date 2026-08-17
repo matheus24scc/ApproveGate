@@ -13,6 +13,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -e . pytest
-      - name: oracle (pytest)
-        run: pytest -q
+      - run: pip install -e . pytest pytest-cov
+      - name: oracle (pytest + coverage)
+        run: pytest -q --cov=approvegate --cov-report=term-missing

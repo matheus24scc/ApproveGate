@@ -11,6 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#testes)
+[![Coverage](https://img.shields.io/badge/coverage-73%25-brightgreen.svg)](#testes)
 
 </div>
 
@@ -44,7 +45,7 @@ pip install -e .
 
 ```python
 from approvegate.gateway import Gateway
-from approvegate.approver import WhatsAppApprover
+from approvegate.whatsapp import WhatsAppApprover
 
 gw = Gateway(WhatsAppApprover())           # pluga no seu whatsapp-api
 r = gw.request({"op": "delete", "target": "producao.db",
@@ -60,6 +61,7 @@ r = gw.request({"op": "delete", "target": "producao.db",
 - `gateway.py` — o gate que segura/executa ações.
 - `attest.py` — **envelope assinado (DSSE-style)** por decisão (contextlock-inspired): cada aprovação é assinada com Ed25519 → `gw.signed_verify_all()` prova integridade + proveniência.
 - `mcp.py` — **MCP server** (serac-inspired) expondo a tool `request_approval`, para qualquer agente compatível com MCP chamar o gate.
+- `whatsapp.py` — **adapter real de WhatsApp** (envia via whatsapp-api + webhook de retorno aprovar/rejeitar) e `ApprovalWebhook`.
 - `cli.py` — `approvegate demo`.
 
 ## Avançado: attestation + MCP (100x via skills do GitHub)
@@ -93,9 +95,46 @@ Oracle verde: baixo risco auto-libera; alto risco exige aprovação; pending→a
 
 - [x] Attestation criptográfico (envelope DSSE/Ed25519) por decisão — `gw.signed_verify_all()`
 - [x] MCP server expondo a tool `request_approval`
-- [ ] Adapter real pro seu `whatsapp-api` (botões InlineKeyboard de aprovar/rejeitar)
-- [ ] Políticas em YAML + deny-list por ferramenta
-- [ ] Attestation Sigstore (cosign) no log de auditoria
+- [x] Adapter real pro `whatsapp-api` (envio + webhook de retorno aprovar/rejeitar)
+- [x] Políticas em YAML + deny-list por ferramenta (`policy.yaml`)
+- [x] Attestation Sigstore (cosign) opcional no log de auditoria
+
+## WhatsApp real (adapter + webhook de retorno)
+
+O `WhatsAppApprover` (`approvegate/whatsapp.py`) pluga no seu **whatsapp-api** (github.com/matheus24scc/whatsapp-api):
+
+1. `gw.request(acao)` de alto risco → `pending`; o gateway chama `approver.register(...)`, que envia a solicitação via `POST {api_base}/api/send/text` com um código (`AG0001`).
+2. O humano responde no WhatsApp: `APROVAR AG0001` ou `REJEITAR AG0001`.
+3. Seu whatsapp-api deve encaminhar a mensagem recebida ao webhook do ApproveGate — `POST /webhook/whatsapp` com `{"body": "<texto>"}` ou `{"request_code":"AG0001","decision":"approved"}`.
+4. O `ApprovalWebhook` (`start_webhook(approver)`) resolve → `gw.approve/reject`.
+
+> Números/telefones vêm de config (`env`), **nunca hardcoded**. O telefone do usuário não é exposto neste repo público. Veja `examples/whatsapp_integration.py`.
+
+## Políticas em YAML
+
+O risco é configurável sem mexer no código. Passe um `policy.yaml` ao `Gateway`:
+
+```python
+from approvegate.policy import load_policy
+gw = Gateway(approver, policy=load_policy("policy.yaml"))
+```
+
+`policy.yaml` aceita `threshold`, `weights` (por `op`) e `deny_list` (por `op` ou `tool`). Exemplo em `policy.example.yaml`.
+
+## Attestation Sigstore (opcional)
+
+Por padrão cada decisão é assinada localmente (DSSE/Ed25519 — `gw.signed_verify_all()`). Para attestation **verificável por terceiros** (Fulcio/Rekor), instale o `cosign` e autentique com OIDC; `sign_sigstore()`/`verify()` produzem/envelopam o blob Sigstore. Sem `cosign`, essas funções degradam graciosamente (retornam `None`/`False`) — não quebram o fluxo.
+
+## Segurança / chaves
+
+- A chave de assinatura local fica em `keys/approvegate.key` (**gitignored** — não vai pro repo). Configure via `APPROVEGATE_KEY`.
+- Nunca comite segredos: este projeto é **público**; revise sempre antes do push.
+- Rotacione a chave quando necessário; `signed_verify_all()` valida o histórico com a chave atual.
+
+## Exemplos
+
+- `examples/mcp_agent_example.py` — agente chamando `request_approval` via MCP.
+- `examples/whatsapp_integration.py` — integração completa com o whatsapp-api.
 
 ## Licença
 

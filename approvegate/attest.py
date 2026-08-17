@@ -40,3 +40,60 @@ def verify(envelope: dict, key: Ed25519PrivateKey | None = None) -> bool:
         return True
     except Exception:
         return False
+
+# ---------------------------------------------------------------------------
+# Optional: Sigstore / cosign attestation (keyless, third-party verifiable)
+# Requires the `cosign` CLI + an OIDC identity. Falls back gracefully when
+# cosign is not installed (the local DSSE/Ed25519 path above remains default).
+# ---------------------------------------------------------------------------
+import shutil as _shutil
+import subprocess as _subprocess
+import tempfile as _tempfile
+
+def cosign_available() -> bool:
+    return _shutil.which("cosign") is not None
+
+def sign_sigstore(payload: dict) -> dict | None:
+    """Sign a payload keyless via Sigstore (`cosign sign-blob`). Returns a DSSE-style
+    envelope with the cosign signature + Fulcio cert, or None if cosign is absent."""
+    if not cosign_available():
+        return None
+    body = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()
+    with _tempfile.TemporaryDirectory() as td:
+        blob = Path(td) / "audit.json"
+        blob.write_bytes(body)
+        sig = Path(td) / "audit.sig"
+        cert = Path(td) / "cert.pem"
+        r = _subprocess.run(["cosign", "sign-blob", "--output-signature", str(sig),
+                             "--output-certificate", str(cert), str(blob)],
+                            capture_output=True, text=True)
+        if r.returncode != 0 or not sig.exists():
+            return None
+        return {
+            "payloadType": "application/vnd.approvegate.audit+json",
+            "payload": _b64(body),
+            "signatures": [{"keyid": "", "sig": _b64(sig.read_bytes()),
+                            "cert": _b64(cert.read_bytes())}],
+            "backend": "sigstore/cosign",
+        }
+
+def verify_sigstore(envelope: dict) -> bool:
+    if not cosign_available() or envelope.get("backend") != "sigstore/cosign":
+        return False
+    try:
+        body = base64.b64decode(envelope["payload"])
+        sig = base64.b64decode(envelope["signatures"][0]["sig"])
+        cert = base64.b64decode(envelope["signatures"][0]["cert"])
+    except Exception:
+        return False
+    with _tempfile.TemporaryDirectory() as td:
+        blob = Path(td) / "audit.json"
+        blob.write_bytes(body)
+        sigp = Path(td) / "audit.sig"
+        sigp.write_bytes(sig)
+        certp = Path(td) / "cert.pem"
+        certp.write_bytes(cert)
+        r = _subprocess.run(["cosign", "verify-blob", "--signature", str(sigp),
+                             "--certificate", str(certp), str(blob)],
+                            capture_output=True, text=True)
+        return r.returncode == 0

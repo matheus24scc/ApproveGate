@@ -1,12 +1,13 @@
 """ApproveGate — the approval gateway that gates agent actions."""
 from __future__ import annotations
-from .policy import risk_score, requires_approval
+from .policy import risk_score, requires_approval, DEFAULT_POLICY, load_policy
 from .audit import AuditLog
 from .attest import sign, verify
 
 class Gateway:
-    def __init__(self, approver) -> None:
+    def __init__(self, approver, policy=None) -> None:
         self.approver = approver
+        self.policy = policy or DEFAULT_POLICY
         self.audit = AuditLog()
         self.signed = []          # contextlock-inspired: signed envelope per decision
         self.pending: dict[int, dict] = {}
@@ -22,9 +23,9 @@ class Gateway:
     def request(self, action: dict, handler=None) -> dict:
         self._id += 1
         rid = self._id
-        score = risk_score(action)
+        score = self.policy.risk_score(action)
         base = {"id": rid, "op": action.get("op"), "score": score}
-        if not requires_approval(action, score):
+        if not self.policy.requires_approval(action, score):
             result = self._exec(action, handler)
             self._record({**base, "decision": "auto-allowed", "executed": True})
             return {"id": rid, "status": "executed", "result": result}
@@ -38,6 +39,8 @@ class Gateway:
             return {"id": rid, "status": "blocked", "result": None}
         # pending: hold for async human approval
         self.pending[rid] = {"action": action, "score": score, "handler": handler}
+        if hasattr(self.approver, "register"):
+            self.approver.register(rid, action, score)
         self._record({**base, "decision": "pending", "executed": False})
         return {"id": rid, "status": "pending", "result": None}
 

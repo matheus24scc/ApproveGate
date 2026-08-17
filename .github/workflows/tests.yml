@@ -16,3 +16,5 @@ jobs:
       - run: pip install -e . pytest pytest-cov
       - name: oracle (pytest + coverage)
         run: pytest -q --cov=approvegate --cov-report=term-missing
+      - name: smoke (uso real end-to-end)
+        run: python scripts/smoke.py

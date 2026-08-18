@@ -12,6 +12,9 @@ license = { text = "MIT" }
 authors = [{ name = "Matheus Gabriel Schveitzer" }]
 dependencies = ["cryptography>=40", "pyyaml>=6"]
 
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov"]
+
 [project.scripts]
 approvegate = "approvegate.cli:main"
 

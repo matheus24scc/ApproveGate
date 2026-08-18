@@ -139,3 +139,12 @@ Por padrão cada decisão é assinada localmente (DSSE/Ed25519 — `gw.signed_ve
 ## Licença
 
 MIT — veja [LICENSE](LICENSE).
+
+## Status (checkup 2026-08-18)
+> Revisado na campanha de repo-checkup. Relatorio completo: `~/repo-checkup/reports/ApproveGate.md` (local do mantenedor, nao no repo).
+- **Build/Install**: PASS — `pip install -e ".[dev]"` RC=0 (instala `pytest 9.1.1` + `pytest_cov`; grupo `dev` adicionado no checkup).
+- **Smoke test**: PASS — `python -m pytest -q` 22 passed; `python scripts/smoke.py` 21/21 (localhost efêmero).
+- **Para rodar de ponta-a-ponta precisa de**: nenhum serviço externo (CLI Python; smoke usa localhost efêmero, sem dependências externas).
+- **Inconsistencias conhecidas (README vs codigo)**: nenhuma.
+- **Seguranca**: sem vulns altas remediadas automaticamente (`pip-audit`: nenhuma vulnerabilidade conhecida; secret scan: único match é chave Ed25519 efêmera de teste, gitignored e não rastreada).
+- **Estado resumido**: build verde + smoke; CLI Python; sem serviços externos; sem vulnerabilidades.
